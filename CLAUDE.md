@@ -1,82 +1,92 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+このファイルは、Claude Code (claude.ai/code) がこのリポジトリでコードを扱う際のガイダンスを **日本語** で提供します。
 
-## Project Overview
+## プロジェクト概要
 
-This is the "amadeus" project - a Python/FastAPI application following Clean Architecture principles.
+本プロジェクト「amadeus」は **Clean Architecture** 原則に従った **Python / FastAPI** アプリケーションです。
 
-## Development Environment
+## 開発環境
 
-This project uses a devcontainer configuration with:
-- Python 3.11+ runtime
-- FastAPI web framework
-- Development tools: git, zsh, fzf, gh (GitHub CLI), jq
-- Network utilities: iptables, ipset, iproute2, dnsutils
-- VS Code extensions: Python, Pylint, Black formatter with format-on-save enabled
-- Claude Code CLI pre-installed globally
+- **Python 3.11 以降** のランタイム
+- **FastAPI** Web フレームワーク
+- 開発ツール: `git`, `zsh`, `fzf`, `gh` (GitHub CLI), `jq`
+- ネットワークユーティリティ: `iptables`, `ipset`, `iproute2`, `dnsutils`
+- VS Code 拡張: Python, Pylint, Black (保存時に自動フォーマット)
+- **Claude Code CLI** をグローバルインストール済み
 
-## Repository Structure
+## リポジトリ構成
 
-- FastAPI application with Clean Architecture
-- Development container configured for Python development
-- Git repository initialized with main branch
+- Clean Architecture に従った FastAPI アプリケーション
+- Python 開発用に設定された **devcontainer**
+- `main` ブランチで初期化された Git リポジトリ
 
-## Architecture Rules
+## アーキテクチャ規約
 
-This project follows Clean Architecture principles with the following layers:
+このプロジェクトは Clean Architecture の原則に従い、以下のレイヤを持ちます。
 
-### Layer Structure
-1. **Entity** - Core business entities and domain models
-2. **UseCase** - Application business logic
-3. **Gateway** - Interfaces for external systems
-4. **Repository** - Data persistence interfaces
-5. **Router** - FastAPI routing and request handling
+### レイヤ構成
 
-### Architecture Guidelines
-- **Dependency Rule**: Dependencies must point inward. Outer layers can depend on inner layers, but not vice versa
-- **Entity Layer**: Contains pure business logic with no external dependencies
-- **UseCase Layer**: Orchestrates business operations using entities and repository/gateway interfaces
-- **Repository/Gateway**: Define interfaces (protocols) in the use case layer, implement in the infrastructure layer
-- **Router Layer**: Handles HTTP concerns using FastAPI and delegates to use cases
+1. **Entity** – コアとなるビジネスエンティティとドメインモデル
+2. **UseCase** – アプリケーションのビジネスロジック
+3. **Gateway** – 外部システムとのインターフェース
+4. **Repository** – データ永続化のインターフェース
+5. **Router** – FastAPI ルーティングとリクエスト処理
 
-### Directory Structure
-```
+### アーキテクチャガイドライン
+
+- **依存性ルール**: 依存は内向きにのみ向ける。外側のレイヤは内側に依存できるが、その逆は不可。
+- **Entity レイヤ**: 外部依存のない純粋なビジネスロジックを含む。
+- **UseCase レイヤ**: Entity と Repository / Gateway インターフェースを用いてビジネス処理を調整する。
+- **Repository / Gateway**: インターフェースを UseCase レイヤに定義し、実装は Infrastructure レイヤに配置する。
+- **Router レイヤ**: HTTP 処理を担当し、UseCase に処理を委譲する。
+
+### ディレクトリ構成
+
+```text
 src/
 ├── domain/
-│   ├── entities/      # Business entities (Pydantic models for domain)
-│   └── repositories/  # Repository interfaces (Protocol classes)
-├── usecases/         # Application business logic
+│   ├── entities/      # ビジネスエンティティ (Pydantic ドメインモデル)
+│   └── repositories/  # Repository インターフェース (Protocol クラス)
+├── usecases/          # アプリケーションビジネスロジック
 ├── infrastructure/
-│   ├── repositories/  # Repository implementations
-│   ├── gateways/     # External service implementations
-│   └── database/     # Database connection and models
+│   ├── repositories/  # Repository 実装
+│   ├── gateways/      # 外部サービス実装
+│   └── database/      # DB 接続およびモデル
 ├── presentation/
-│   ├── routers/      # FastAPI routers
-│   └── schemas/      # Request/Response Pydantic models
-└── main.py           # FastAPI application entry point
+│   ├── routers/       # FastAPI ルータ
+│   └── schemas/       # リクエスト／レスポンス用 Pydantic モデル
+└── main.py            # FastAPI アプリケーションのエントリポイント
 ```
 
-### Development Principles
-- Use Pydantic for data validation and serialization
-- Define repository interfaces using Python Protocol classes
-- Keep FastAPI dependencies only in the presentation layer
-- Use dependency injection with FastAPI's Depends()
-- Test each layer independently with pytest
-- Avoid framework dependencies in domain and usecase layers
-- Use type hints throughout the codebase
+### 開発指針
 
-### FastAPI Specific Guidelines
-- Routers should be thin and delegate to use cases
-- Use Pydantic models for request/response schemas (separate from domain entities)
-- Leverage FastAPI's dependency injection for repository implementations
-- Handle errors with appropriate HTTP status codes
-- Use async/await for I/O operations
+- データのバリデーションとシリアライズには **Pydantic** を使用する。
+- Repository インターフェースには Python の **Protocol** を用いる。
+- FastAPI 依存は **presentation** 層のみに限定する。
+- FastAPI の `Depends()` を使った依存性注入を活用する。
+- **pytest** を用いて各レイヤを個別にテストする。
+- ドメインと UseCase レイヤではフレームワーク依存を避ける。
+- コード全体に **型ヒント** を徹底する。
 
-## Development Notes
+### FastAPI 固有ガイドライン
 
-- The devcontainer provides a complete development environment with Claude Code pre-installed
-- VS Code is configured for Python development with Pylint and Black formatter
-- Network capabilities are enabled for potential networking-related development
-- Follow Clean Architecture principles for all new code additions
-- Use FastAPI's built-in features while maintaining architectural boundaries
+- Router は薄く保ち、処理を UseCase に委譲する。
+- リクエスト／レスポンススキーマにはドメインエンティティとは分離した **Pydantic** モデルを使用する。
+- Repository 実装の注入には FastAPI の依存性注入機構を利用する。
+- エラーは適切な **HTTP ステータスコード** でハンドリングする。
+- I/O 操作には **async/await** を用いる。
+
+## 開発ノート
+
+- devcontainer には Claude Code がプリインストールされており、完全な開発環境を提供する。
+- VS Code は Pylint と Black により保存時自動フォーマットが行われる。
+- ネットワーク機能はネットワーク関連開発が可能なように設定済み。
+- 新規コードは常に Clean Architecture 原則に従うこと。
+- FastAPI の機能を活用しつつ、レイヤ間の境界を明確に保つこと。
+
+---
+
+### 会話言語に関する指示
+
+**以降、Claude Code との対話は必ず日本語で行ってください。**
