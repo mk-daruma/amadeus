@@ -1,0 +1,53 @@
+services:
+  amadeus-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.fastapi
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+      - /app/src/__pycache__
+      - /app/.pytest_cache
+    working_dir: /app
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+    env_file:
+      - .env
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+    depends_on:
+      - db
+    networks:
+      - amadeus-network
+    restart: unless-stopped
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: amadeus
+      POSTGRES_USER: amadeus
+      POSTGRES_PASSWORD: amadeus_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - amadeus-network
+    restart: unless-stopped
+
+  # VOICEVOX API サーバー（開発用）
+  voicevox:
+    image: voicevox/voicevox_engine:cpu-ubuntu20.04-0.14.6
+    ports:
+      - "50021:50021"
+    networks:
+      - amadeus-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  amadeus-network:
+    driver: bridge
