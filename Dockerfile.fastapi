@@ -1,0 +1,30 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# システム依存関係のインストール
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    portaudio19-dev \
+    git \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Python依存関係のインストール
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# アプリケーションコードをコピー
+COPY . .
+
+# 非rootユーザーの作成
+RUN useradd -m -u 1000 amadeus && \
+    chown -R amadeus:amadeus /app
+
+USER amadeus
+
+# ポート番号の公開
+EXPOSE 8000
+
+# FastAPIアプリケーションの起動
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
